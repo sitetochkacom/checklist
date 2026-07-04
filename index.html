@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Чек-лист к свадьбе</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;1,500&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --cream:#FAF7F0;
+    --forest:#7D5135;
+    --forest-dark:#5C3B26;
+    --ink:#2B2620;
+    --gold:#B8935F;
+    --sage:#E8EDE6;
+    --line:#DAD3C2;
+    --white:#FFFDF9;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html{scroll-behavior:smooth;}
+  body{
+    background:var(--cream);
+    color:var(--ink);
+    font-family:'Manrope',sans-serif;
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  /* ---------- LOADING SCREEN ---------- */
+  #loading-screen{
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:16px;
+    font-size:13px;
+    color:#9B917E;
+    letter-spacing:0.05em;
+  }
+  .loading-rings{width:96px;height:96px;}
+
+  /* ---------- LOCK SCREEN ---------- */
+  #lock-screen{
+    display:none;
+    min-height:100vh;
+    align-items:center;
+    justify-content:center;
+    flex-direction:column;
+    text-align:center;
+    padding:32px;
+  }
+  #lock-screen.visible{display:flex;}
+  #lock-screen .eyebrow{
+    font-size:12px;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    color:var(--forest);
+    font-weight:700;
+    margin-bottom:18px;
+  }
+  #lock-screen h1{
+    font-family:'Playfair Display',serif;
+    font-weight:600;
+    font-size:clamp(28px,5vw,42px);
+    max-width:560px;
+    line-height:1.25;
+    margin-bottom:16px;
+  }
+  #lock-screen p{
+    max-width:440px;
+    color:#5A5347;
+    font-size:15px;
+    line-height:1.6;
+    margin-bottom:28px;
+  }
+  #lock-screen a.cta{
+    display:inline-block;
+    background:var(--forest);
+    color:var(--white);
+    text-decoration:none;
+    padding:14px 32px;
+    border-radius:2px;
+    font-size:14px;
+    font-weight:600;
+    letter-spacing:0.03em;
+    transition:background 0.2s ease;
+  }
+  #lock-screen a.cta:hover{background:var(--forest-dark);}
+  #lock-screen .lock-icon{width:34px;height:34px;margin-bottom:22px;opacity:0.55;}
+
+  /* ---------- APP SHELL ---------- */
+  #app{display:none;}
+  #app.visible{display:block;}
+
+  header.top{
+    position:sticky;
+    top:0;
+    z-index:10;
+    background:rgba(250,247,240,0.92);
+    backdrop-filter:blur(6px);
+    border-bottom:1px solid var(--line);
+    padding:22px clamp(20px,5vw,56px) 18px;
+  }
+  .top-row{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    gap:16px;
+    max-width:760px;
+    margin:0 auto 14px;
+  }
+  .eyebrow{
+    font-size:11px;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    color:var(--forest);
+    font-weight:700;
+  }
+  header.top h1{
+    font-family:'Playfair Display',serif;
+    font-weight:600;
+    font-size:clamp(22px,3.4vw,30px);
+    max-width:760px;
+    margin:0 auto 4px;
+    line-height:1.2;
+  }
+  header.top .sub{
+    max-width:760px;
+    margin:0 auto;
+    font-size:13px;
+    color:#7A7263;
+  }
+  .progress-count{
+    font-size:13px;
+    color:#7A7263;
+    white-space:nowrap;
+    font-weight:600;
+  }
+
+  /* vine progress bar — signature element */
+  .vine-wrap{
+    max-width:760px;
+    margin:16px auto 0;
+    position:relative;
+    height:20px;
+  }
+  .vine-track{
+    position:absolute;
+    top:9px;left:0;right:0;
+    height:2px;
+    background:var(--line);
+  }
+  .vine-fill{
+    position:absolute;
+    top:9px;left:0;
+    height:2px;
+    background:var(--forest);
+    width:0%;
+    transition:width 0.5s ease;
+  }
+  .vine-leaves{
+    position:absolute;
+    top:0;left:0;right:0;
+    display:flex;
+    justify-content:space-between;
+  }
+  .leaf{
+    width:20px;height:20px;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .leaf svg{width:14px;height:14px;transition:transform 0.3s ease, opacity 0.3s ease;opacity:0.25;transform:scale(0.6);}
+  .leaf.bloomed svg{opacity:1;transform:scale(1);}
+  .leaf svg path{fill:var(--gold);}
+
+  main{
+    max-width:760px;
+    margin:0 auto;
+    padding:36px clamp(20px,5vw,56px) 90px;
+  }
+
+  .section{
+    border-bottom:1px solid var(--line);
+  }
+  .section:last-child{border-bottom:none;}
+
+  .section-head{
+    display:flex;
+    align-items:center;
+    gap:16px;
+    padding:22px 0;
+    cursor:pointer;
+    user-select:none;
+  }
+  .section-num{
+    font-family:'Playfair Display',serif;
+    font-style:italic;
+    font-size:14px;
+    color:var(--gold);
+    width:26px;
+    flex-shrink:0;
+  }
+  .section-title{
+    font-family:'Playfair Display',serif;
+    font-size:19px;
+    font-weight:600;
+    flex:1;
+  }
+  .section-meta{
+    font-size:12px;
+    color:#9B917E;
+    font-weight:600;
+    flex-shrink:0;
+  }
+  .chevron{
+    width:9px;height:9px;
+    border-right:1.5px solid var(--ink);
+    border-bottom:1.5px solid var(--ink);
+    transform:rotate(-45deg);
+    transition:transform 0.25s ease;
+    flex-shrink:0;
+    opacity:0.5;
+  }
+  .section.open .chevron{transform:rotate(45deg);}
+
+  .section-body{
+    max-height:0;
+    overflow:hidden;
+    transition:max-height 0.35s ease;
+  }
+  .section.open .section-body{max-height:2000px;}
+
+  .item{
+    display:flex;
+    align-items:flex-start;
+    gap:14px;
+    padding:11px 0 11px 42px;
+  }
+  .item:last-child{padding-bottom:26px;}
+
+  .checkbox{
+    width:19px;height:19px;
+    border-radius:50%;
+    flex-shrink:0;
+    margin-top:1px;
+    cursor:pointer;
+    position:relative;
+    background:#D3CDBE;
+    transition:background 0.2s ease;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+  .checkbox svg{
+    width:11px;height:11px;
+    opacity:0;
+    transition:opacity 0.15s ease;
+    transform:translate(1px,1.5px);
+  }
+  .checkbox svg path{stroke:var(--white);}
+  .item.checked .checkbox{background:var(--forest);}
+  .item.checked .checkbox svg{opacity:1;}
+  .item-label{
+    font-size:14.5px;
+    line-height:1.55;
+    cursor:pointer;
+    color:var(--ink);
+    transition:color 0.2s ease, opacity 0.2s ease;
+  }
+  .item.checked .item-label{color:#9B917E;text-decoration:line-through;text-decoration-color:#C8C0AE;}
+
+  footer.note{
+    max-width:760px;
+    margin:0 auto;
+    padding:0 clamp(20px,5vw,56px) 60px;
+    font-size:12.5px;
+    color:#9B917E;
+    line-height:1.6;
+    border-top:1px solid var(--line);
+    padding-top:24px;
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{transition:none !important;}
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ LOADING SCREEN (shown while checking token) ============ -->
+<div id="loading-screen">
+  <svg class="loading-rings" viewBox="0 0 140 140">
+    <g>
+      <animateTransform attributeName="transform" type="translate" values="0 0;8 0;0 0" dur="1.8s" repeatCount="indefinite"/>
+      <circle cx="58" cy="70" r="26" fill="none" stroke="#7D5135" stroke-width="3"/>
+    </g>
+    <g>
+      <animateTransform attributeName="transform" type="translate" values="0 0;-8 0;0 0" dur="1.8s" repeatCount="indefinite"/>
+      <circle cx="82" cy="70" r="26" fill="none" stroke="#B8935F" stroke-width="3"/>
+      <g transform="translate(82,44)">
+        <path d="M0 -8 L6 0 L0 9 L-6 0 Z" fill="#B8935F"/>
+        <path d="M-6 0 L0 -8 L6 0 L0 -2 Z" fill="#D6B98A"/>
+        <line x1="-6" y1="0" x2="6" y2="0" stroke="#8A6A3E" stroke-width="0.5"/>
+        <line x1="0" y1="-8" x2="0" y2="9" stroke="#8A6A3E" stroke-width="0.5"/>
+      </g>
+    </g>
+  </svg>
+  <div>Проверяем доступ…</div>
+</div>
+
+<!-- ============ LOCK SCREEN (shown when no valid token) ============ -->
+<div id="lock-screen">
+  <svg class="lock-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect x="5" y="11" width="14" height="9" rx="1.5" stroke="#366043" stroke-width="1.5"/>
+    <path d="M8 11V7a4 4 0 018 0v4" stroke="#366043" stroke-width="1.5"/>
+  </svg>
+  <div class="eyebrow">Чек-лист к свадьбе</div>
+  <h1>Доступ открывается после оплаты</h1>
+  <p>Эта ссылка выдаётся автоматически ботом сразу после покупки. Если ты уже оплатил(а) — проверь, что перешёл(шла) по ссылке из Telegram. Если ещё нет — оформи доступ ниже.</p>
+  <a class="cta" href="https://t.me/sitetochkacom_bot" target="_blank" rel="noopener">Получить чек-лист →</a>
+</div>
+
+<!-- ============ MAIN APP (shown after token verified) ============ -->
+<div id="app">
+  <header class="top">
+    <div class="top-row">
+      <div>
+        <div class="eyebrow">Чек-лист к свадьбе</div>
+      </div>
+      <div class="progress-count" id="progress-count">0 / 0</div>
+    </div>
+    <h1>От помолвки до дня Х</h1>
+    <div class="sub">Отмечай пункты по мере готовности — прогресс сохраняется автоматически.</div>
+    <div class="vine-wrap">
+      <div class="vine-track"></div>
+      <div class="vine-fill" id="vine-fill"></div>
+      <div class="vine-leaves" id="vine-leaves"></div>
+    </div>
+  </header>
+
+  <main id="sections"></main>
+
+  <footer class="note">
+    Прогресс сохраняется в этом браузере. Если сменишь устройство — открой чек-лист по той же персональной ссылке ещё раз.
+  </footer>
+</div>
+
+<script>
+/* ============================================================
+   CONFIG
+   ============================================================ */
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyYhtjJoyiIYs9juJ03K9tiRH8WXmh24fzWetb33TcbvIduKaKYKuydUX3EN__MewG3tw/exec";
+const BOT_LINK = "https://t.me/sitetochkacom_bot";
+
+/* ============================================================
+   CONTENT — категории и пункты чек-листа
+   ============================================================ */
+const CHECKLIST = [
+  {
+    title: "За 6–9 месяцев",
+    items: [
+      "Определить дату свадьбы",
+      "Определить примерный бюджет свадьбы",
+      "Составить примерный список гостей",
+      "Подать заявление в ЗАГС",
+      "Выбрать площадку для проведения свадьбы",
+      "Выбрать концепцию свадьбы",
+      "Выбрать фотографа",
+      "Выбрать видеографа",
+      "Выбрать ведущего мероприятия",
+      "Выбрать церемониймейстера"
+    ]
+  },
+  {
+    title: "За 3–6 месяцев",
+    items: [
+      "Неофициально уведомить гостей о вашей свадьбе",
+      "Согласовать предварительную смету с организатором",
+      "Внести предоплаты",
+      "Утвердить предварительную смету по декору",
+      "Обсудить образы жениха и невесты в соответствии со стилистикой свадьбы",
+      "Определиться с моделью свадебных колец",
+      "Согласовать визажиста и мастера по причёске",
+      "Выбрать дизайн торта и его начинки",
+      "Выбрать макет пригласительных и определиться с текстом",
+      "Раздать и разослать пригласительные"
+    ]
+  },
+  {
+    title: "За 2–3 месяца",
+    items: [
+      "Продегустировать блюда для банкета/либо просто выбрать меню",
+      "Определиться с транспортом для себя и ваших гостей",
+      "Купить свадебное платье и костюм",
+      "Купить свадебную обувь",
+      "Купить свадебное бельё",
+      "Выбрать место для утренних съёмок жениха и невесты",
+      "Обсудить сценарий программы и музыкальные предпочтения с ведущим",
+      "Сформировать стоп-лист, что не должно звучать на вашей свадьбе",
+      "Утвердить финал вечера",
+      "Обсудить примерный тайминг свадебного дня с организатором",
+      "Выбрать музыку для первого танца",
+      "Начать репетировать первый танец",
+      "Просчитать количество алкоголя"
+    ]
+  },
+  {
+    title: "За месяц",
+    items: [
+      "Записаться на маникюр и педикюр",
+      "Купить сувениры и подарки для гостей",
+      "Сформировать список и план рассадки гостей",
+      "Провести репетицию причёски и макияжа",
+      "Собрать сумку невесты",
+      "Утвердить смету с вашим организатором",
+      "Внести оплату по смете"
+    ]
+  },
+  {
+    title: "За 1–2 недели до свадьбы",
+    items: [
+      "Провести примерку свадебных нарядов, вместе с бельём и обувью",
+      "Начать разнашивать свадебную обувь",
+      "Подтвердить меню и количество гостей",
+      "Согласовать с поставщиками и закупить алкоголь",
+      "Провести генеральную репетицию свадебного танца",
+      "Подготовить всё необходимое для съёмок утра и прогулки",
+      "Посетить сеансы SPA и массажа"
+    ]
+  },
+  {
+    title: "За 1–3 дня до свадьбы",
+    items: [
+      "Сделать маникюр и педикюр",
+      "Подготовить косметику и аптечку",
+      "Подготовить паспорта и кольца"
+    ]
+  },
+  {
+    title: "За 1 день до свадьбы",
+    items: [
+      "Выспаться и расслабиться"
+    ]
+  },
+  {
+    title: "День свадьбы",
+    items: [
+      "Проснуться в хорошем настроении и обязательно позавтракать",
+      "Выглядеть сногсшибательно и не забывать улыбаться",
+      "Проверить обручальные кольца, паспорт, свидетельства",
+      "Наслаждаться вашим днём!"
+    ]
+  }
+];
+
+/* ============================================================
+   TOKEN VERIFICATION
+   ============================================================ */
+function getTokenFromURL(){
+  const params = new URLSearchParams(window.location.search);
+  return params.get('token');
+}
+
+async function verifyToken(token, attempt = 1){
+  if(!token) return false;
+  try{
+    const res = await fetch(`${APPS_SCRIPT_URL}?action=verify&token=${encodeURIComponent(token)}`);
+    const data = await res.json();
+    return data.valid === true;
+  }catch(e){
+    console.error('Token verification failed (attempt ' + attempt + ')', e);
+    if(attempt < 3){
+      await new Promise(r => setTimeout(r, 600));
+      return verifyToken(token, attempt + 1);
+    }
+    return false;
+  }
+}
+
+function storageKey(token){
+  return `checklist_progress_${token}`;
+}
+
+/* ============================================================
+   SERVER SYNC (progress лист в Google Sheet)
+   ============================================================ */
+let saveTimer = null;
+
+async function loadProgressFromServer(token){
+  try{
+    const res = await fetch(`${APPS_SCRIPT_URL}?action=load_progress&token=${encodeURIComponent(token)}`);
+    const data = await res.json();
+    return (data.ok && data.state) ? data.state : null;
+  }catch(e){
+    console.error('Load progress failed', e);
+    return null;
+  }
+}
+
+function saveProgressToServer(token, stateToSave){
+  // Не блокируем UI, просто фиксируем попытку. Ошибки не критичны —
+  // localStorage всё равно остаётся источником правды на этом устройстве.
+  fetch(APPS_SCRIPT_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify({ action: 'save_progress', token: token, state: stateToSave })
+  }).catch(e => console.error('Save progress failed', e));
+}
+
+function scheduleServerSave(){
+  if(!currentToken) return;
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => {
+    saveProgressToServer(currentToken, state);
+  }, 700);
+}
+
+/* ============================================================
+   RENDER
+   ============================================================ */
+let currentToken = null;
+let state = {}; // { "0-0": true, "0-1": false, ... }
+
+function loadState(){
+  const raw = localStorage.getItem(storageKey(currentToken));
+  state = raw ? JSON.parse(raw) : {};
+}
+
+function saveState(){
+  localStorage.setItem(storageKey(currentToken), JSON.stringify(state));
+}
+
+function totalItems(){
+  return CHECKLIST.reduce((sum, s) => sum + s.items.length, 0);
+}
+
+function checkedItems(){
+  return Object.values(state).filter(Boolean).length;
+}
+
+function updateProgress(){
+  const total = totalItems();
+  const done = checkedItems();
+  document.getElementById('progress-count').textContent = `${done} / ${total}`;
+  const pct = total ? (done/total)*100 : 0;
+  document.getElementById('vine-fill').style.width = pct + '%';
+
+  const leaves = document.querySelectorAll('.leaf');
+  const leafThreshold = 100 / (leaves.length - 1 || 1);
+  leaves.forEach((leaf, i) => {
+    const leafPct = i * leafThreshold;
+    leaf.classList.toggle('bloomed', pct >= leafPct);
+  });
+}
+
+function renderLeaves(){
+  const wrap = document.getElementById('vine-leaves');
+  wrap.innerHTML = '';
+  const count = CHECKLIST.length + 1;
+  for(let i=0;i<count;i++){
+    const leaf = document.createElement('div');
+    leaf.className = 'leaf';
+    leaf.innerHTML = `<svg viewBox="0 0 24 24"><path d="M12 2C8 6 6 10 6 13a6 6 0 0012 0c0-3-2-7-6-11z"/></svg>`;
+    wrap.appendChild(leaf);
+  }
+}
+
+function checkSvg(){
+  return `<svg viewBox="0 0 16 16" fill="none"><path d="M3 8.5L6.2 11.5L13 4.5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+}
+
+function renderSections(){
+  const container = document.getElementById('sections');
+  container.innerHTML = '';
+
+  CHECKLIST.forEach((section, sIdx) => {
+    const doneCount = section.items.filter((_, iIdx) => state[`${sIdx}-${iIdx}`]).length;
+
+    const sectionEl = document.createElement('div');
+    sectionEl.className = 'section';
+    if(sIdx === 0) sectionEl.classList.add('open');
+
+    sectionEl.innerHTML = `
+      <div class="section-head">
+        <div class="section-num">${String(sIdx+1).padStart(2,'0')}</div>
+        <div class="section-title">${section.title}</div>
+        <div class="section-meta">${doneCount}/${section.items.length}</div>
+        <div class="chevron"></div>
+      </div>
+      <div class="section-body">
+        ${section.items.map((label, iIdx) => `
+          <div class="item ${state[`${sIdx}-${iIdx}`] ? 'checked' : ''}" data-key="${sIdx}-${iIdx}">
+            <div class="checkbox">${checkSvg()}</div>
+            <div class="item-label">${label}</div>
+          </div>
+        `).join('')}
+      </div>
+    `;
+
+    sectionEl.querySelector('.section-head').addEventListener('click', () => {
+      sectionEl.classList.toggle('open');
+    });
+
+    sectionEl.querySelectorAll('.item').forEach(itemEl => {
+      itemEl.addEventListener('click', (e) => {
+        const key = itemEl.getAttribute('data-key');
+        state[key] = !state[key];
+        itemEl.classList.toggle('checked', state[key]);
+        const [sIdx2] = key.split('-');
+        const doneCountEl = sectionEl.querySelector('.section-meta');
+        const newDone = section.items.filter((_, iIdx) => state[`${sIdx2}-${iIdx}`]).length;
+        doneCountEl.textContent = `${newDone}/${section.items.length}`;
+        saveState();
+        scheduleServerSave();
+        updateProgress();
+      });
+    });
+
+    container.appendChild(sectionEl);
+  });
+}
+
+/* ============================================================
+   INIT
+   ============================================================ */
+async function init(){
+  const token = getTokenFromURL();
+
+  // Если токен уже подтверждён и сохранён локально — не дёргаем сервер повторно
+  const cachedValid = token && localStorage.getItem(`checklist_verified_${token}`) === 'true';
+  const isValid = cachedValid || await verifyToken(token);
+
+  document.getElementById('loading-screen').style.display = 'none';
+
+  if(!isValid){
+    const lockScreen = document.getElementById('lock-screen');
+    lockScreen.classList.add('visible');
+    lockScreen.querySelector('a.cta').href = BOT_LINK;
+    return; // остаёмся на lock-screen
+  }
+
+  if(token) localStorage.setItem(`checklist_verified_${token}`, 'true');
+  currentToken = token;
+
+  document.getElementById('app').classList.add('visible');
+
+  loadState();
+  renderLeaves();
+  renderSections();
+  updateProgress();
+
+  // Синхронизация с сервером — в фоне, не блокируя отрисовку.
+  // Если там есть более полные данные (например, с другого устройства),
+  // перерисовываем поверх того, что уже видно.
+  loadProgressFromServer(token).then(serverState => {
+    if(serverState && Object.keys(serverState).length > 0){
+      const changed = JSON.stringify(serverState) !== JSON.stringify(state);
+      if(changed){
+        state = serverState;
+        saveState();
+        renderSections();
+        updateProgress();
+      }
+    }
+  });
+}
+
+init();
+</script>
+
+</body>
+</html>
